@@ -96,16 +96,17 @@ void movesnake(char direction) {
     case 'd' : heady = heady+1;break;
     default: break;
   }
+  //Disabling all LEDs (except for food)
   for(int g=0;g<rows;g++) {
     for(int b=0;b<columns;b++) {
-      if(g == foodx && b == foody) {
-
-      }
+      if(g == foodx && b == foody) { }
       else {
         digitalWrite(leds[g][b], LOW);
       }
     }
   }
+
+  //Activating LEDs with tail
   digitalWrite(leds[headx][heady],HIGH);
   for(int i=0;i<tail*2-1;i+=2) {
     digitalWrite(leds[historysnake[i]][historysnake[i+1]],HIGH);
@@ -130,7 +131,7 @@ char readinput(char last) {
   else if(y > 1000) {
     direction = 'd';
   }
-  return direction;
+  return direction; //Returning char for direction (l = left, r = right, u = up, d = down)
 }
 
 //function to spawn food (Checks if the randomly generated spot is already used by the snake)
