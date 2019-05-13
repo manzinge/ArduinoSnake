@@ -29,10 +29,14 @@ const int green4 = 37;
 
 const int rows = 4;
 const int columns = 4;
+
+//Initializing the array
 int leds[rows][columns] = {{blue1,blue2,blue3,blue4}, {green1,green2,green3,green4},{red1,red2,red3,red4}, {white1,white2,white3,white4}};
 int size = sizeof(leds) / sizeof(int);
+
+//Initializing useful variables
 char direction = 'r';
-int headx = 100, heady=100;
+int headx = 0, heady=0;
 int foodx = 100, foody=100;
 unsigned long joystickmillis = millis();
 unsigned long movemillis = millis();
@@ -43,42 +47,35 @@ void setup () {
   clearleds();
   direction = 'r';
   snakelength = 1;
-  headx = random(0,rows);
-  heady = random(0,columns);
-  headx = 0;
-  heady = 0;
-  foodx = random(0,rows);
-  foody = random(0, columns);
+
   digitalWrite(leds[headx][heady],HIGH);
-  digitalWrite(leds[foodx][foody],HIGH);
+  spawnfood();
 }
 
 void loop () {
+  //Getting current time
   unsigned long currentMillis = millis();
 
-  //Reading direction of the joystick every 10th of a second
+  //Reading direction of the joystick every 10th of a second for better controls
   if((unsigned long)(currentMillis - joystickmillis) >= 100) {
-
     direction = readinput(direction);
     joystickmillis = millis();
   }
 
   //Moving the snake every second and checking if it is in range of the playarea
   if((unsigned long)(currentMillis - movemillis) >=1000) {
-    Serial.print(foodx);
-    Serial.print(foody);
-    Serial.println();
+      //In case the head touches the food, the snake will eat the food and grow larger
       if(headx == foodx && heady == foody) {
-        Serial.print("Food eaten!");
         snakelength++;
         spawnfood();
       }
-      Serial.println(snakelength);
-      checkifinrange();
+      checkifinrange(); //Checks if player is out of bounds
       movesnake(readinput(direction));
       movemillis = millis();
   }
 }
+
+//Function to move the snake in the direction given by the joystick
 void movesnake(char direction) {
   switch(direction) {
     case 'l' : digitalWrite(leds[headx][heady],LOW);headx = headx-1;digitalWrite(leds[headx][heady],HIGH);break;
@@ -88,6 +85,8 @@ void movesnake(char direction) {
     default: break;
   }
 }
+
+//Function to read the Input of the joystick and converting it into a direction
 char readinput(char last) {
   int x = analogRead(joystickX);
   int y = analogRead(joystickY);
@@ -108,6 +107,7 @@ char readinput(char last) {
   return direction;
 }
 
+//function to spawn food (Checks if the randomly generated spot is already used by the snake)
 void spawnfood() {
   foodx = random(0,rows);
   foody = random(0,columns);
@@ -118,11 +118,14 @@ void spawnfood() {
   digitalWrite(leds[foodx][foody],HIGH);
 }
 
+//Function to check if the player is inside of bounds
 void checkifinrange() {
   if(headx < 0 || headx > 3 || heady < 0 || heady > 3) {
     gameover();
   }
 }
+
+//Function to restart the game (flashes LEDs beforehand)
 void gameover() {
   for(int i=0;i<3;i++) {
     activateleds();
@@ -132,6 +135,8 @@ void gameover() {
   }
   setup();
 }
+
+//Function to lighten up all LEDs
 void activateleds() {
   for(int i=0;i<columns;i++) {
     for(int j=0;j<rows;j++) {
@@ -139,6 +144,8 @@ void activateleds() {
       }
    }
 }
+
+//Function to power off all LEDs
 void clearleds() {
   for(int i=0;i<columns;i++) {
     for(int j=0;j<rows;j++) {
