@@ -41,10 +41,9 @@ unsigned long joystickmillis = millis();
 unsigned long movemillis = millis();
 int tail = 0;
 
-
 void setup () {
   Serial.begin(38400);  
-  clearleds();
+  clearleds(true);
   direction = 'r';
   tail = 0;
   headx = 0;
@@ -83,11 +82,6 @@ void movesnake(char direction) {
   }
   historysnake[0] = headx;
   historysnake[1] = heady;
-
-  for(int b=0;b<40;b++) {
-    Serial.print(historysnake[b]);
-  }
-  Serial.println("End");
   
   switch(direction) {
     case 'l' : headx = headx-1;break;
@@ -97,14 +91,7 @@ void movesnake(char direction) {
     default: break;
   }
   //Disabling all LEDs (except for food)
-  for(int g=0;g<rows;g++) {
-    for(int b=0;b<columns;b++) {
-      if(g == foodx && b == foody) { }
-      else {
-        digitalWrite(leds[g][b], LOW);
-      }
-    }
-  }
+  clearleds(false);
 
   //Activating LEDs with tail
   digitalWrite(leds[headx][heady],HIGH);
@@ -157,7 +144,7 @@ void gameover() {
   for(int i=0;i<3;i++) {
     activateleds();
     delay(500);
-    clearleds();
+    clearleds(true);
     delay(500);
   }
   setup();
@@ -173,10 +160,14 @@ void activateleds() {
 }
 
 //Function to power off all LEDs
-void clearleds() {
+void clearleds(bool clearfood) {
   for(int i=0;i<columns;i++) {
     for(int j=0;j<rows;j++) {
-      digitalWrite(leds[i][j],LOW);
+      //Bool paramter in function head in order to determine if food should be cleared as well
+      if(i == foodx && j == foody && clearfood == false) { }
+      else {
+        digitalWrite(leds[i][j],LOW);
       }
-   }
+    }
+  }
 }
