@@ -65,6 +65,9 @@ void loop () {
 
   //Moving the snake every second and checking if it is in range of the playarea
   if((unsigned long)(currentMillis - movemillis) >=1000) {
+    Serial.print(foodx);
+    Serial.print(foody);
+    Serial.println();
       if(headx == foodx && heady == foody) {
         Serial.print("Food eaten!");
         snakelength++;
@@ -108,11 +111,11 @@ char readinput(char last) {
 void spawnfood() {
   foodx = random(0,rows);
   foody = random(0,columns);
-  while(digitalRead(leds[random(0,columns)][random(0,rows)]) == HIGH) {
+  while(digitalRead(leds[foodx][foody]) == HIGH) {
     foodx = random(0,rows);
     foody = random(0,columns);
   }
-  pinMode(leds[foodx][foody],HIGH);
+  digitalWrite(leds[foodx][foody],HIGH);
 }
 
 void checkifinrange() {
