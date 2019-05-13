@@ -1,6 +1,5 @@
 #define joystickX A0
 #define joystickY A1
-
 int joystick = 8;
 
 //White LEDs
@@ -32,7 +31,7 @@ const int columns = 4;
 
 //Initializing the array
 int leds[rows][columns] = {{blue1,blue2,blue3,blue4}, {green1,green2,green3,green4},{red1,red2,red3,red4}, {white1,white2,white3,white4}};
-int size = sizeof(leds) / sizeof(int);
+int historysnake[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 //Initializing useful variables
 char direction = 'r';
@@ -42,12 +41,14 @@ unsigned long joystickmillis = millis();
 unsigned long movemillis = millis();
 int snakelength = 1;
 
+
 void setup () {
   Serial.begin(38400);  
   clearleds();
   direction = 'r';
   snakelength = 1;
-
+  headx = 0;
+  heady = 0;
   digitalWrite(leds[headx][heady],HIGH);
   spawnfood();
 }
@@ -77,13 +78,24 @@ void loop () {
 
 //Function to move the snake in the direction given by the joystick
 void movesnake(char direction) {
+  digitalWrite(leds[headx][heady],LOW);
+  for(int g = 37;g>=0;g--) {
+    historysnake[g+2] = historysnake[g];
+  }
+  historysnake[0] = headx;
+  historysnake[1] = heady;
+  for(int b=0;b<40;b++) {
+    Serial.print(historysnake[b]);
+  }
+  Serial.println("End");
   switch(direction) {
-    case 'l' : digitalWrite(leds[headx][heady],LOW);headx = headx-1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'r' : digitalWrite(leds[headx][heady],LOW);headx = headx+1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'u' : digitalWrite(leds[headx][heady],LOW);heady = heady-1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'd' : digitalWrite(leds[headx][heady],LOW);heady = heady+1;digitalWrite(leds[headx][heady],HIGH);break;
+    case 'l' : headx = headx-1;break;
+    case 'r' : headx = headx+1;break;
+    case 'u' : heady = heady-1;break;
+    case 'd' : heady = heady+1;break;
     default: break;
   }
+  digitalWrite(leds[headx][heady],HIGH);
 }
 
 //Function to read the Input of the joystick and converting it into a direction
