@@ -33,17 +33,24 @@ int leds[rows][columns] = {{blue1,blue2,blue3,blue4}, {green1,green2,green3,gree
 int size = sizeof(leds) / sizeof(int);
 char direction = 'r';
 int headx = 100, heady=100;
+int foodx = 100, foody=100;
 unsigned long joystickmillis = millis();
 unsigned long movemillis = millis();
+int snakelength = 1;
 
 void setup () {
   Serial.begin(38400);  
   clearleds();
+  direction = 'r';
+  snakelength = 1;
   headx = random(0,rows);
   heady = random(0,columns);
   headx = 0;
   heady = 0;
+  foodx = random(0,rows);
+  foody = random(0, columns);
   digitalWrite(leds[headx][heady],HIGH);
+  digitalWrite(leds[foodx][foody],HIGH);
 }
 
 void loop () {
@@ -51,13 +58,19 @@ void loop () {
 
   //Reading direction of the joystick every 10th of a second
   if((unsigned long)(currentMillis - joystickmillis) >= 100) {
+
     direction = readinput(direction);
-    Serial.println(direction);
     joystickmillis = millis();
   }
 
   //Moving the snake every second and checking if it is in range of the playarea
   if((unsigned long)(currentMillis - movemillis) >=1000) {
+      if(headx == foodx && heady == foody) {
+        Serial.print("Food eaten!");
+        snakelength++;
+        spawnfood();
+      }
+      Serial.println(snakelength);
       checkifinrange();
       movesnake(readinput(direction));
       movemillis = millis();
@@ -65,10 +78,10 @@ void loop () {
 }
 void movesnake(char direction) {
   switch(direction) {
-    case 'l' : clearleds();headx = headx-1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'r' : clearleds();headx = headx+1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'u' : clearleds();heady = heady-1;digitalWrite(leds[headx][heady],HIGH);break;
-    case 'd' : clearleds();heady = heady+1;digitalWrite(leds[headx][heady],HIGH);break;
+    case 'l' : digitalWrite(leds[headx][heady],LOW);headx = headx-1;digitalWrite(leds[headx][heady],HIGH);break;
+    case 'r' : digitalWrite(leds[headx][heady],LOW);headx = headx+1;digitalWrite(leds[headx][heady],HIGH);break;
+    case 'u' : digitalWrite(leds[headx][heady],LOW);heady = heady-1;digitalWrite(leds[headx][heady],HIGH);break;
+    case 'd' : digitalWrite(leds[headx][heady],LOW);heady = heady+1;digitalWrite(leds[headx][heady],HIGH);break;
     default: break;
   }
 }
@@ -92,21 +105,29 @@ char readinput(char last) {
   return direction;
 }
 
+void spawnfood() {
+  foodx = random(0,rows);
+  foody = random(0,columns);
+  while(digitalRead(leds[random(0,columns)][random(0,rows)]) == HIGH) {
+    foodx = random(0,rows);
+    foody = random(0,columns);
+  }
+  pinMode(leds[foodx][foody],HIGH);
+}
+
 void checkifinrange() {
   if(headx < 0 || headx > 3 || heady < 0 || heady > 3) {
-    flashleds();
+    gameover();
   }
 }
-void flashleds() {
+void gameover() {
   for(int i=0;i<3;i++) {
     activateleds();
     delay(500);
     clearleds();
     delay(500);
   }
-  headx = 0;
-  heady = 0;
-  digitalWrite(leds[headx][heady],HIGH);
+  setup();
 }
 void activateleds() {
   for(int i=0;i<columns;i++) {
