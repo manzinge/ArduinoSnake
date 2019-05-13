@@ -39,14 +39,14 @@ int headx = 0, heady=0;
 int foodx = 100, foody=100;
 unsigned long joystickmillis = millis();
 unsigned long movemillis = millis();
-int snakelength = 1;
+int tail = 0;
 
 
 void setup () {
   Serial.begin(38400);  
   clearleds();
   direction = 'r';
-  snakelength = 1;
+  tail = 0;
   headx = 0;
   heady = 0;
   digitalWrite(leds[headx][heady],HIGH);
@@ -67,7 +67,7 @@ void loop () {
   if((unsigned long)(currentMillis - movemillis) >=1000) {
       //In case the head touches the food, the snake will eat the food and grow larger
       if(headx == foodx && heady == foody) {
-        snakelength++;
+        tail++;
         spawnfood();
       }
       checkifinrange(); //Checks if player is out of bounds
@@ -78,16 +78,17 @@ void loop () {
 
 //Function to move the snake in the direction given by the joystick
 void movesnake(char direction) {
-  digitalWrite(leds[headx][heady],LOW);
   for(int g = 37;g>=0;g--) {
     historysnake[g+2] = historysnake[g];
   }
   historysnake[0] = headx;
   historysnake[1] = heady;
+
   for(int b=0;b<40;b++) {
     Serial.print(historysnake[b]);
   }
   Serial.println("End");
+  
   switch(direction) {
     case 'l' : headx = headx-1;break;
     case 'r' : headx = headx+1;break;
@@ -95,7 +96,20 @@ void movesnake(char direction) {
     case 'd' : heady = heady+1;break;
     default: break;
   }
+  for(int g=0;g<rows;g++) {
+    for(int b=0;b<columns;b++) {
+      if(g == foodx && b == foody) {
+
+      }
+      else {
+        digitalWrite(leds[g][b], LOW);
+      }
+    }
+  }
   digitalWrite(leds[headx][heady],HIGH);
+  for(int i=0;i<tail*2-1;i+=2) {
+    digitalWrite(leds[historysnake[i]][historysnake[i+1]],HIGH);
+  }
 }
 
 //Function to read the Input of the joystick and converting it into a direction
